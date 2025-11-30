@@ -1,0 +1,15 @@
+Firstly, it turns out I can't switch to the profile while installing Gentoo. Use
+the non-selinux profile for initial installation and then follow the SELinux
+installation instructions [1]. I couldn't get the recommended mcs working, so I
+went with targeted instead.
+
+Had to patch ebuild for sys-libs/libselinux. Modified the ebuild as suggested in
+the musl porting notes [2] and ran ebuild manifest on it so it would pass
+verification and install.
+
+sys-libs/libsemanage wouldn't compile. Downloaded the linked patch in this bug
+report [3] and added to /etc/portage/patches/sys-libs/libsemanage/.
+
+[1] https://wiki.gentoo.org/wiki/SELinux/Installation
+[2] https://wiki.gentoo.org/wiki/Musl_porting_notes#error:_LFS64_interfaces_.28.2A64_undeclared_here.2C_ex._pread64.29
+[3] https://bugs.gentoo.org/938846

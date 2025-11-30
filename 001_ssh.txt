@@ -1,0 +1,22 @@
+Needed to enable ssh_sysadm_login bool using setsebool. Probably because I'm
+using the targeted policy and my user is unconfined_u.
+
+Needed to disable openrc pam in /etc/pam.d/system-login. It was causing it to
+try and access something in /run/openrc.
+
+Needed to manually set sshd_exec_t context on /usr/lib/misc/sshd-auth. This is
+fixed in selinux-base-policy version 20250618 which is in testing, so I added to
+/etc/portage/package.accept_keywords/ to install it.
+
+Then, to upgrade selinux modules:
+
+Go to /usr/share/selinux/targeted and run semodule -i *.pp
+(I had to disable the networkmanager module here because the base module
+conflicted)
+
+semodule -B
+(This is what regenerates /etc/selinux/targeted/contexts/files/file_contexts,
+which seems to be what restorecon reads)
+
+restorecon -nvr /
+(and then without n after confirming)
