@@ -1,0 +1,4 @@
+After upgrading to the newer base policy, portage stopped being able to fetch.
+It turns out there's now a bool portage_fetch_all_ports which is disabled by
+default. I didn't find it in the repo at version 20250618, instead I found it on
+the main branch. It turns out gentoo has a custom patch including it.
