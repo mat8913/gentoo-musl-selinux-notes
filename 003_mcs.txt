@@ -1,0 +1,19 @@
+Since I now know that file_contexts is generated based on the loaded SELinux
+modules, I wanted to once again attempt to use the mcs policy type instead of
+targeted.
+
+I switched to permissive mode and then attempted to unload all of the active
+modules. This didn't work and turns out to be unnecessary as SELinux seems to
+separate modules by store. Instead, the instructions on the wiki [1] were mostly
+sufficient apart from an issue with the networkmanager module.
+
+The main thing I learnt from this is that module loading (and presumably
+unloading too) is transactional. If you attempt to load multiple modules at once
+and one of them fails, the entire transaction fails and no modules are loaded.
+If you have multiple modules which mutually depend on each other, loading them
+one at a time will fail but loading them all at once may succeed. So, the
+solution in this case ended up being temporarily moving the networkmanager
+module out of the way so that I could load the rest of the modules in a single
+transaction.
+
+[1] https://wiki.gentoo.org/wiki/SELinux/Policy_store#Switching_active_policy_store
