@@ -1,0 +1,43 @@
+There are two parts to this. I need to get Sway working and I need seatd which
+is a logind alternative.
+
+For seatd, I was about to write my own policy for it, but I found someone
+already wrote it [1], it just wasn't being built. Patched the
+selinux-base-policy ebuild to add seatd to the MODS list.
+
+I started out running Sway as an unconfined user to make sure any errors were
+due to the seatd policy. I ended up needing to make two additions to policy
+(which I used selocal [2] for). The first one is needed for it to work at all:
+
+    term_use_unallocated_ttys(seatd_t)
+    term_use_all_ttys(seatd_t)
+
+And the second one fixes a weird issue where tty switching stops working:
+
+    allow seatd_t self:fifo_file rw_fifo_file_perms;
+
+Now, to get Sway working as a regular confined user. The seatd module provides
+an interface to allow connections to the seatd socket:
+
+    seatd_stream_connect(user_t)
+
+Then I disabled dontaudit and it was a matter of running, crashing, checking
+logs, adding allow rules, repeat, until I finally got Sway to display a mostly
+blank screen with no obvious issues. I don't have any applications installed yet
+to test with, so I'll probably have to add more rules later.
+
+For now, my selocal rules are:
+
+    19: allow seatd_t self:fifo_file rw_fifo_file_perms;
+    20: term_use_unallocated_ttys(seatd_t)
+    21: term_use_all_ttys(seatd_t)
+    22: seatd_stream_connect(user_t)
+    23: allow user_t seatd_t:fd use;
+    24: allow user_t dri_device_t:chr_file { open read write getattr ioctl map };
+    25: allow user_t self:capability sys_nice;
+    26: allow user_t event_device_t:chr_file { read write getattr ioctl };
+    27: allow user_t fonts_t:dir { search getattr };
+    28: allow user_t fonts_t:file { read getattr open };
+
+[1] https://github.com/SELinuxProject/refpolicy/commit/2d50968f430a0635c7c4a95cc244d8df69a2ad79
+[2] https://wiki.gentoo.org/wiki/SELinux/Tutorials/Using_gentoo_selocal_for_small_policy_enhancements
